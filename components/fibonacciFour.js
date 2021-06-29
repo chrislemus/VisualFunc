@@ -1,5 +1,7 @@
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import evaljs from 'evaljs';
+import classes from './fib4.module.css';
+
 import Interpreter from 'js-interpreter';
 import {
   useState,
@@ -8,76 +10,47 @@ import {
   useRef,
   useLayoutEffect,
 } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import clsx from 'clsx';
 
-// const CODE = `function fib(n) {
-//     if(n <= 1) return n;
-//     return fib(n-1) + fib(n-2)
-// }`;
 var code = [
-  'var result = [];',
-  'function fibonacci(n, output) {',
-  '  var a = 1, b = 1, sum;',
-  '  for (var i = 0; i < n; i++) {',
-  '    output.push(a);',
-  '    sum = a + b;',
-  '    a = b;',
-  '    b = sum;',
-  '  }',
-  '}',
-  'fibonacci(16, result);',
-  "alert(result.join(', '));",
+  'function fib(n) {',
+  ' if(n <= 1) return n;',
+  ' return fib(n-1) + fib(n-2)',
+  '};',
+  'fib(2)',
 ].join('\n');
+
 let myInterpreter;
 export default function Fibonacci() {
-  const classes = useStyles();
-
   const stepButtonRef = useRef();
   const runButtonRef = useRef();
+  const [currentNodeType, setCurrentNodeType] = useState();
+  const [nodeTypes, setNodeTypes] = useState(new Set());
+  const [stateCounter, setStateCounter] = useState(0);
   const [stepBtnDisableAttr, setStepBtnDisableAttr] = useState('');
   const [runBtnDisableAttr, setRunBtnDisableAttr] = useState('');
 
   useLayoutEffect(() => {
-    const initAlert = (interpreter, globalObject) => {
-      var wrapper = function (text) {
-        return window.alert(arguments.length ? text : '');
-      };
-      interpreter.setProperty(
-        globalObject,
-        'alert',
-        interpreter.createNativeFunction(wrapper)
-      );
-    };
-    myInterpreter = new Interpreter(code, initAlert);
+    myInterpreter = new Interpreter(code);
     myInterpreter.REGEXP_MODE = 1;
     myInterpreter.run();
-    // setInitAlert(initAlert);
   }, []);
-  // function initAlert(interpreter, globalObject) {
-  //   var wrapper = function (text) {
-  //     return window.alert(arguments.length ? text : '');
-  //   };
-  //   interpreter.setProperty(
-  //     globalObject,
-  //     'alert',
-  //     interpreter.createNativeFunction(wrapper)
-  //   );
-  // }
-
-  // function initAlert(interpreter, globalObject) {
-  //   var wrapper = function (text) {
-  //     return alert(arguments.length ? text : '');
-  //   };
-  //   interpreter.setProperty(
-  //     globalObject,
-  //     'alert',
-  //     interpreter.createNativeFunction(wrapper)
-  //   );
-  // }
-
+  const filteredSteps = new Set([
+    'EmptyStatement',
+    'Program',
+    'FunctionDeclaration',
+  ]);
   function stepButton() {
-    console.log(myInterpreter);
+    const { stateStack } = myInterpreter;
+    const nodeType = stateStack[stateStack.length - 1].node.type;
+    if (!nodeTypes.has(nodeType)) {
+      let types = nodeTypes;
+      types.add(nodeType);
+      setNodeTypes(types);
+    }
+    setCurrentNodeType(nodeType);
+    console.log(nodeTypes);
+    setStateCounter(stateCounter + 1);
+
     if (myInterpreter.stateStack.length) {
       var node =
         myInterpreter.stateStack[myInterpreter.stateStack.length - 1].node;
@@ -87,12 +60,17 @@ export default function Fibonacci() {
       var start = 0;
       var end = 0;
     }
-    createSelection(start, end);
+
+    if (!filteredSteps.has(nodeType)) {
+      createSelection(start, end);
+    }
     try {
       var ok = myInterpreter.step();
     } finally {
       if (!ok) {
         disable('disabled');
+      } else {
+        if (filteredSteps.has(nodeType)) stepButton();
       }
     }
   }
@@ -103,7 +81,10 @@ export default function Fibonacci() {
   }
 
   function createSelection(start, end) {
+    const { ast, globalObject, globalScope, stateStack } = myInterpreter;
+
     var field = document.getElementById('code');
+
     if (field.createTextRange) {
       var selRange = field.createTextRange();
       selRange.collapse(true);
@@ -117,6 +98,12 @@ export default function Fibonacci() {
       field.selectionEnd = end;
     }
     field.focus();
+
+    console.log('ast', ast);
+    console.log('GLOBALObj', globalObject);
+    console.log('GLOBALScope', globalScope);
+    console.log('stateStack', stateStack);
+    console.log(myInterpreter);
     console.log(start, end);
     console.log(window.getSelection().toString());
   }
@@ -132,23 +119,21 @@ export default function Fibonacci() {
 
   function parseButton() {
     var code = document.getElementById('code').value;
-    const initAlert = (interpreter, globalObject) => {
-      var wrapper = function (text) {
-        return window.alert(arguments.length ? text : '');
-      };
-      interpreter.setProperty(
-        globalObject,
-        'alert',
-        interpreter.createNativeFunction(wrapper)
-      );
-    };
-    myInterpreter = new Interpreter(code, initAlert);
+
+    myInterpreter = new Interpreter(code);
     disable('');
   }
 
   return (
     <div>
       <div className={classes.wrapper}>
+        <div>
+          <p>state counter: {stateCounter}</p>
+          <p>node type: {currentNodeType}</p>
+          <button onClick={() => setStateCounter(0)}>
+            reset state counter
+          </button>
+        </div>
         <div>
           <button onClick={parseButton}>Parse</button>
           <button onClick={stepButton} disabled={stepBtnDisableAttr}>
@@ -165,22 +150,3 @@ export default function Fibonacci() {
     </div>
   );
 }
-
-const useStyles = makeStyles((theme) => ({
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    padding: '5rem',
-    // '& div': {
-    //   paddingLeft: '1rem',
-    // },
-  },
-  inFrame: {
-    background: '#e0fff6',
-  },
-  param: {
-    color: 'red',
-    fontWeight: 'bold',
-  },
-}));
