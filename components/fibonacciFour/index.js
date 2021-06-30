@@ -97,8 +97,13 @@ export default function Fibonacci() {
       <div className={classes.wrapper}>
         <div>
           <div className={classes.dataDisplayWrapper}>
-            <p>state counter: {stateCounter}</p>
-            <p>Current Step Name: {currentStep}</p>
+            <p>
+              <strong>Step Counter: </strong>
+              {stateCounter}
+            </p>
+            <p>
+              <strong>Step: </strong> {currentStep}
+            </p>
           </div>
           <div>
             <StepsDropdownFilter
