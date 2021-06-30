@@ -6,9 +6,21 @@
   font-weight: bold;
 }
 
+.dataDisplayWrapper {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  padding: 16px;
+  box-shadow: 0 0px 10px rgba(0, 0, 0, 0.085), 0 0px 80px rgba(0, 0, 0, 0.17);
+  margin-bottom: 16px;
+}
+.dataDisplayWrapper > p {
+  margin: 5px 0;
+}
+
 .formControl {
   margin: 16px;
-  width: 200;
+  width: 200px;
 }
 .selectEmpty {
   margin-top: 32px;
@@ -19,4 +31,18 @@
   flex-direction: column;
   justify-content: center;
   padding: 5rem;
+}
+
+.buttonGroup {
+  display: flex;
+  margin: 16px 0;
+}
+.buttonGroup > button {
+  background: rgb(0, 138, 218);
+  border: none;
+  padding: 5px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #fff;
+  margin: 0 5px;
 }

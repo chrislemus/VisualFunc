@@ -97,8 +97,10 @@ export default function Fibonacci() {
     <div>
       <div className={classes.wrapper}>
         <div>
-          <p>state counter: {stateCounter}</p>
-          <p>Current Step Name: {currentStep}</p>
+          <div className={classes.dataDisplayWrapper}>
+            <p>state counter: {stateCounter}</p>
+            <p>Current Step Name: {currentStep}</p>
+          </div>
           <div>
             <StepsDropdownFilter
               onChange={(e) => setFilteredSteps(e.target.value)}
@@ -106,7 +108,7 @@ export default function Fibonacci() {
             />
           </div>
         </div>
-        <div>
+        <div className={classes.buttonGroup}>
           <button onClick={parseButton}>Parse</button>
           <button onClick={stepButton} disabled={stepAndRunBtnDisabledAttr}>
             Step
