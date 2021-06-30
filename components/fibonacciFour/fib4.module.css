@@ -46,3 +46,6 @@
   color: #fff;
   margin: 0 5px;
 }
+.buttonGroup > button:disabled {
+  opacity: 0.5;
+}

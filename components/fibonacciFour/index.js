@@ -22,10 +22,10 @@ export default function Fibonacci() {
     setStateCounter(stateCounter + 1);
     const { stateStack } = myInterpreter;
     const currentStack = stateStack[stateStack.length - 1];
-    const currentNode = currentStack?.node;
-    const currentScope = currentStack.scope.object.properties;
+    const { node, scope } = currentStack;
+    const scopeProperties = scope.object.properties;
 
-    setCurrentStep(currentNode.type);
+    setCurrentStep(node.type);
     // console.log(currentStack);
     if (currentStack.hasOwnProperty('value')) console.warn(currentStack.value);
 
@@ -35,11 +35,10 @@ export default function Fibonacci() {
 
   const handleStepAnimation = async () => {
     const { stateStack } = myInterpreter;
-    const currentStack = stateStack[stateStack.length - 1];
-    const currentNode = currentStack?.node;
-    const stepIsFiltered = filteredSteps.includes(currentNode.type);
-    let start = stateStack.length ? currentNode.start : 0;
-    let end = stateStack.length ? currentNode.end : 0;
+    const { node } = stateStack[stateStack.length - 1];
+    const stepIsFiltered = filteredSteps.includes(node.type);
+    let start = stateStack.length ? node.start : 0;
+    let end = stateStack.length ? node.end : 0;
 
     if (!stepIsFiltered) createSelection(start, end);
     const ok = await myInterpreter.step();
