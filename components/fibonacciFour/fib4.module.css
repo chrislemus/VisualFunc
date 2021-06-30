@@ -1,0 +1,22 @@
+.inFrame {
+  background: #e0fff6;
+}
+.param {
+  color: red;
+  font-weight: bold;
+}
+
+.formControl {
+  margin: 16px;
+  width: 200;
+}
+.selectEmpty {
+  margin-top: 32px;
+}
+.wrapper {
+  display: flex;
+  background: rgb(251, 254, 255);
+  flex-direction: column;
+  justify-content: center;
+  padding: 5rem;
+}
