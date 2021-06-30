@@ -41,14 +41,22 @@ export default function Fibonacci() {
   ]);
   function stepButton() {
     const { stateStack } = myInterpreter;
-    const nodeType = stateStack[stateStack.length - 1].node.type;
+    const currentStack = stateStack[stateStack.length - 1];
+    const currentNode = currentStack.node;
+    const currentScope = currentStack.scope.object.properties;
+    const nodeType = currentNode.type;
+    console.log(currentStack);
+    if (currentStack.hasOwnProperty('value')) {
+      console.warn(currentStack.value);
+    }
+
     if (!nodeTypes.has(nodeType)) {
       let types = nodeTypes;
       types.add(nodeType);
       setNodeTypes(types);
     }
     setCurrentNodeType(nodeType);
-    console.log(nodeTypes);
+    // console.log(nodeTypes);
     setStateCounter(stateCounter + 1);
 
     if (myInterpreter.stateStack.length) {
@@ -99,13 +107,13 @@ export default function Fibonacci() {
     }
     field.focus();
 
-    console.log('ast', ast);
-    console.log('GLOBALObj', globalObject);
-    console.log('GLOBALScope', globalScope);
-    console.log('stateStack', stateStack);
-    console.log(myInterpreter);
-    console.log(start, end);
-    console.log(window.getSelection().toString());
+    // console.log('ast', ast);
+    // console.log('GLOBALObj', globalObject);
+    // console.log('GLOBALScope', globalScope);
+    // console.log('stateStack', stateStack);
+    // console.log(myInterpreter);
+    // console.log(start, end);
+    // console.log(window.getSelection().toString());
   }
 
   function runButton() {
