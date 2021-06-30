@@ -1,6 +1,6 @@
 import classes from './fib4.module.css';
 import StepsDropdownFilter from './StepsDropdownFilter';
-import { code, defaultFilteredSteps } from './constants';
+import { code as defaultCode, defaultFilteredSteps } from './constants';
 import Interpreter from 'js-interpreter';
 import {
   useState,
@@ -11,6 +11,7 @@ import {
 } from 'react';
 
 export default function Fibonacci() {
+  const [code, setCode] = useState(defaultCode);
   const [myInterpreter, setMyInterpreter] = useState(new Interpreter(code));
   const [stepAndRunBtnDisabledAttr, setStepAndRunBtnDisabledAttr] =
     useState('');
@@ -86,24 +87,27 @@ export default function Fibonacci() {
     }
   }
   function parseButton() {
-    var code = document.getElementById('code').value;
     setStateCounter(0);
     setMyInterpreter(new Interpreter(code));
     setStepAndRunBtnDisabledAttr('');
   }
+
+  const dataToDisplay = [
+    ['Step Counter:', stateCounter],
+    ['Step:', currentStep],
+    ['Code Value:', myInterpreter.value],
+  ];
 
   return (
     <div>
       <div className={classes.wrapper}>
         <div>
           <div className={classes.dataDisplayWrapper}>
-            <p>
-              <strong>Step Counter: </strong>
-              {stateCounter}
-            </p>
-            <p>
-              <strong>Step: </strong> {currentStep}
-            </p>
+            {dataToDisplay.map(([label, value], idx) => (
+              <p key={'dataDisplay' + idx}>
+                <strong>{label}</strong> {value}{' '}
+              </p>
+            ))}
           </div>
           <div>
             <StepsDropdownFilter
@@ -121,9 +125,13 @@ export default function Fibonacci() {
             Run
           </button>
         </div>
-        <textarea id="code" spellCheck="false" rows={30}>
-          {code}
-        </textarea>
+        <textarea
+          id="code"
+          spellCheck="false"
+          rows={7}
+          onChange={(e) => setCode(e.target.value)}
+          value={code}
+        />
       </div>
     </div>
   );
