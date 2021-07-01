@@ -10,6 +10,7 @@
   "dependencies": {
     "@fontsource/roboto": "^4.4.5",
     "@material-ui/core": "^4.11.4",
+    "esprima": "^4.0.1",
     "eval5": "^1.4.6",
     "evaljs": "^2.0.1",
     "expression-runner": "^1.0.4",

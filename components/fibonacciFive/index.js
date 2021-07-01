@@ -54,10 +54,7 @@ export default function Fibonacci() {
   };
 
   function createSelection(start, end) {
-    // const { ast, globalObject, globalScope, stateStack } = myInterpreter;
-
-    var field = document.getElementById('code');
-
+    const field = document.getElementById('code');
     if (field.createTextRange) {
       var selRange = field.createTextRange();
       selRange.collapse(true);
