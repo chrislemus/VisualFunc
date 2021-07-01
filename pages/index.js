@@ -3,6 +3,7 @@ import Fibonacci from '../components/fibonacci';
 import FibonacciTwo from '../components/fibonacciTwo';
 import FibonacciThree from '../components/fibonacciThree';
 import FibonacciFour from '../components/fibonacciFour';
+import FibonacciFive from '../components/fibonacciFive';
 import { useState } from 'react';
 
 export default function Home() {
@@ -27,7 +28,7 @@ export default function Home() {
         <br/>
         <p>{result}</p> */}
         {/* <FibonacciThree /> */}
-        <FibonacciFour />
+        <FibonacciFive />
         {/* <Fibonacci /> */}
       </main>
     </div>
