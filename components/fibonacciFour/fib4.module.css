@@ -6,6 +6,11 @@
   font-weight: bold;
 }
 
+.codeHighlightStyles {
+  color: red;
+  font-weight: bold;
+}
+
 .dataDisplayWrapper {
   display: flex;
   flex-direction: column;

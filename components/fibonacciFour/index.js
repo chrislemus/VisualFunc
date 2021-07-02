@@ -20,16 +20,39 @@ export default function Fibonacci() {
   const [currentStep, setCurrentStep] = useState();
   const [stateCounter, setStateCounter] = useState(0);
   const [filteredSteps, setFilteredSteps] = useState(defaultFilteredSteps);
+  const [variableValues, setVariableValues] = useState([]);
 
   function stepButton() {
     setStateCounter(stateCounter + 1);
     const { stateStack } = myInterpreter;
     const currentStack = stateStack[stateStack.length - 1];
     const { node, scope } = currentStack;
-    const scopeProperties = scope.object.properties;
 
+    const scopeProperties = scope?.object?.properties;
+    if (node.type === 'Identifier') {
+      const identifierValue = scopeProperties?.[node.name];
+      if (identifierValue?.class !== 'Function') {
+        const start = stateStack.length ? node.start : 0;
+        const end = stateStack.length ? node.end : 0;
+        setVariableValues([
+          ...variableValues,
+          { start, end, value: identifierValue },
+        ]);
+      }
+    }
     setCurrentStep(node.type);
-    // console.log(currentStack);
+    // if (scopeProperties && currentStep === 'Identifier') {
+    //   const variableValue = scopeProperties?.[text[0]];
+    //   // if (variableValue) {
+
+    //   // }
+    //   console.log(scopeProperties);
+    //   console.log(currentStack);
+    //   console.log(variableValue);
+    // }
+    console.log('========================');
+    console.log('stateStack', currentStack);
+    //console.log('myInterpreter', myInterpreter);
     if (currentStack.hasOwnProperty('value')) console.warn(currentStack.value);
 
     setStateCounter(stateCounter + 1);
@@ -39,38 +62,20 @@ export default function Fibonacci() {
   const handleStepAnimation = async () => {
     const { stateStack } = myInterpreter;
     const { node } = stateStack[stateStack.length - 1];
+
     const stepIsFiltered = filteredSteps.includes(node.type);
     const start = stateStack.length ? node.start : 0;
     const end = stateStack.length ? node.end : 0;
     setStart(start);
     setEnd(end);
-    if (!stepIsFiltered) createSelection(start, end);
+    //console.log(myInterpreter);
+    //if (!stepIsFiltered) createSelection(start, end); selects text area text
     const ok = await myInterpreter.step();
     if (!ok) {
       setStepAndRunBtnDisabledAttr('disabled');
     } else {
       if (stepIsFiltered) stepButton();
     }
-  };
-
-  function createSelection(start, end) {
-    // const { ast, globalObject, globalScope, stateStack } = myInterpreter;
-
-    var field = document.getElementById('code');
-
-    if (field.createTextRange) {
-      var selRange = field.createTextRange();
-      selRange.collapse(true);
-      selRange.moveStart('character', start);
-      selRange.moveEnd('character', end);
-      selRange.select();
-    } else if (field.setSelectionRange) {
-      field.setSelectionRange(start, end);
-    } else if (field.selectionStart) {
-      field.selectionStart = start;
-      field.selectionEnd = end;
-    }
-    field.focus();
     // consoleLogger([
     //   ['ast', ast],
     //   ['GLOBALObj', globalObject],
@@ -79,7 +84,7 @@ export default function Fibonacci() {
     //   ['step text', window.getSelection().toString()],
     //   ['start/end text ref', start, end],
     // ]);
-  }
+  };
 
   function runButton() {
     setStepAndRunBtnDisabledAttr('disabled');
@@ -140,41 +145,41 @@ export default function Fibonacci() {
         />
         <div className={classes.codePresentation}>
           {code.split('\n').map((codeLine, idx) => {
-            let [refIdxStart, refIdxEnd] = getCharsRawIdx(code)[idx];
-            console.log(getCharsRawIdx(code)[idx]);
-            const inRangeStart = between(refIdxStart, start, end);
-            const inRangeEnd = between(refIdxEnd, start, end);
-            const inRange = inRangeStart || inRangeEnd;
-            const customCodeLine = codeLine.split('');
-            //console.log(customCodeLine);
-            ///
-            const currentIdxStart =
-              start - refIdxEnd > 0 ? start - refIdxEnd : 0;
-            const currentIdxEnd = end - refIdxEnd > 0 ? end - refIdxEnd : 0;
-            const maxIdx = refIdxEnd - refIdxStart;
-            if (inRange) {
-              console.log('RAW:', codeLine);
-              const text = customCodeLine.slice(
-                currentIdxStart,
-                currentIdxEnd + 1
-              );
-              console.log('text to replace', text);
-
-              customCodeLine.splice(
-                currentIdxStart,
-                currentIdxEnd + 1,
-                <strong style={{ color: 'red' }}>{text}</strong>
-              );
-              //console.log('text to replace',text);
-              //console.log(customCodeLine);
-            }
-
             const style = {};
             const spacing = codeLine.match(/^\s+/)?.[0]?.length;
             if (spacing) style.paddingLeft = `${spacing * 5}px`;
+            const [refIdxStart, refIdxEnd] = getCodeCoordinates(code)[idx];
+
+            const inRange = codeLineIsInRange(
+              start,
+              end,
+              refIdxStart,
+              refIdxEnd
+            );
+
+            console.log(variableValues);
+            const currentStack =
+              myInterpreter?.stateStack?.[myInterpreter.stateStack.length - 1];
+            const currentNode = currentStack?.node;
+            const scopeProperties = currentStack?.scope?.object?.properties;
+
+            if (inRange) {
+              let slicerStart = 0;
+              if (start - refIdxStart > 0) slicerStart = start - refIdxStart;
+              const slicerEnd = end - refIdxStart - slicerStart;
+              codeLine = codeLine.split('');
+              const text = codeLine.slice(slicerStart, slicerEnd + slicerStart);
+
+              codeLine.splice(
+                slicerStart,
+                slicerEnd,
+                <span className={classes.codeHighlightStyles}>{text}</span>
+              );
+            }
+
             return (
               <p key={'codeLine' + idx} style={style}>
-                {customCodeLine}
+                {codeLine}
               </p>
             );
           })}
@@ -188,9 +193,20 @@ const consoleLogger = (items) => {
   items.forEach(([title, data]) => console.log(title, data));
 };
 
+const getCodeCoordinates = (code) => {
+  return code.split('\n').reduce((idxRanges, text, idx) => {
+    let startIdx = idx === 0 ? 0 : idxRanges[idx - 1][1] + 1;
+    if (idx > 0) startIdx += 1; //alternative to account for new line
+    const endIdx = startIdx + (text.length - 1);
+    const newIdxRange = [startIdx, endIdx];
+    return [...idxRanges, newIdxRange];
+  }, []);
+};
+
 const getCharsRawIdx = (code) => {
   return code.split('\n').reduce((idxRanges, text, idx) => {
     let startIdx = idx === 0 ? 0 : idxRanges[idx - 1][1] + 1;
+    if (idx > 0) startIdx += 1; //alternative to account for new line
     const endIdx = startIdx + (text.length - 1);
     const newIdxRange = [startIdx, endIdx];
     return [...idxRanges, newIdxRange];
@@ -199,6 +215,15 @@ const getCharsRawIdx = (code) => {
 
 function between(x, min, max) {
   return x >= min && x <= max;
+}
+
+function codeLineIsInRange(start, end, startAlt, endAlt) {
+  return (
+    between(startAlt, start, end) ||
+    between(start, startAlt, endAlt) ||
+    between(endAlt, start, end) ||
+    between(end, startAlt, endAlt)
+  );
 }
 
 const getIndexRange = (arrayLength, startNumber) => {
@@ -210,3 +235,21 @@ const getIndexRange = (arrayLength, startNumber) => {
 const createNumberArray = (arrayLength, startNumber = 0) => {
   return Array.from({ length: arrayLength }, (_, i) => i + startNumber);
 };
+
+function createSelection(start, end) {
+  //selects textArea text
+  var field = document.getElementById('code');
+  if (field.createTextRange) {
+    var selRange = field.createTextRange();
+    selRange.collapse(true);
+    selRange.moveStart('character', start);
+    selRange.moveEnd('character', end);
+    selRange.select();
+  } else if (field.setSelectionRange) {
+    field.setSelectionRange(start, end);
+  } else if (field.selectionStart) {
+    field.selectionStart = start;
+    field.selectionEnd = end;
+  }
+  field.focus();
+}
